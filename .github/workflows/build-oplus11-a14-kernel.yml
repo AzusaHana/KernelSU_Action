@@ -25,10 +25,8 @@ jobs:
 
     - name: Download kernel source
       run: |
-        git clone https://github.com/OnePlusOSS/android_kernel_modules_and_devicetree_oneplus_sm8550 -b oneplus/sm8550_u_14.0.0_oneplus11 kernel_workspace --depth=1
         cd $GITHUB_WORKSPACE/kernel_workspace
-        cd kernel_platform
-        git clone https://github.com/OnePlusOSS/android_kernel_oneplus_sm8550 -b oneplus/sm8550_u_14.0.0_oneplus11 common --depth=1
+        git clone --recursive https://github.com/LineageOS/android_kernel_oneplus_sm8550 -b lineage-21 common --depth=1
         cd common/scripts
         sed -i 's/ -dirty//g' setlocalversion
         sed -i 's/ -g / -android13-8-g /g' setlocalversion
@@ -42,7 +40,7 @@ jobs:
 
     - name: Setup KernelSU
       run: |
-        cd $GITHUB_WORKSPACE/kernel_workspace/kernel_platform/common
+        cd $GITHUB_WORKSPACE/kernel_workspace/common
         rm -rf KernelSU drivers/kernelsu
         curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s main
         KSU_VERSION=$(cd KernelSU && expr $(/usr/bin/git rev-list --count HEAD) + 10200)
@@ -51,8 +49,8 @@ jobs:
     - name: Build kernel
       run: |
         cd $GITHUB_WORKSPACE/kernel_workspace
-        KERNEL_DIR=./kernel_platform/common
-        OUT_DIR=../../out
+        KERNEL_DIR=./common
+        OUT_DIR=../out
         DEFCONFIG="gki_defconfig vendor/kalama_GKI.config"
         LTO=thin
         export PATH=$GITHUB_WORKSPACE/kernel_workspace/clang-aosp/bin:$PATH
