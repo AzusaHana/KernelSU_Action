@@ -14,12 +14,6 @@ ROOT="$(git rev-parse --show-toplevel 2>/dev/null)" || {
 }
 cd "$ROOT"
 
-if [[ -n "$(git status --porcelain)" ]]; then
-  echo "错误：工作区不是干净的。请先提交或暂存现有修改。" >&2
-  git status --short
-  exit 1
-fi
-
 echo "==> 当前分支"
 git branch --show-current
 
