@@ -311,8 +311,9 @@ echo
 echo "==> 删除明显残留的 KSU 配置文件"
 
 find . \
-  -path "./.git" -prune -o \
+  -depth \
   -type f \
+  ! -path "./.git/*" \
   \( \
     -iname "ksu.config" -o \
     -iname "kernelsu.config" -o \
