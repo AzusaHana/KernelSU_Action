@@ -5,6 +5,8 @@ set -euo pipefail
 # shellcheck source=scripts/lib.sh
 . "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
 
+SCRIPT_DIR="$(dirname "${BASH_SOURCE[0]}")"
+
 WORKSPACE=${WORKSPACE:?WORKSPACE must be set}
 KERNEL_DIR="${WORKSPACE}/android-kernel"
 
@@ -19,9 +21,17 @@ retry 3 git clone -q --recursive --depth=1 \
 	-b "$KERNEL_SOURCE_BRANCH" "$KERNEL_SOURCE" "$KERNEL_DIR" \
 	|| die "failed to clone ${KERNEL_SOURCE}"
 
-# KernelSU forks compute their version from the commit count, and several
-# read it straight out of the enclosing git repo. A depth-1 clone reports 1
-# commit, which produces a nonsense version. Unshallow just enough to count.
+group "Removing KernelSU"
+if [ -x "${SCRIPT_DIR}/remove_ksu.sh" ]; then
+	bash "${SCRIPT_DIR}/remove_ksu.sh" "$KERNEL_DIR"
+elif [ -f "${SCRIPT_DIR}/remove_ksu.sh" ]; then
+	bash "${SCRIPT_DIR}/remove_ksu.sh" "$KERNEL_DIR"
+else
+	die "KernelSU removal script not found: ${SCRIPT_DIR}/remove_ksu.sh"
+fi
+ok "KernelSU removal completed"
+endgroup
+
 if [ -f "${KERNEL_DIR}/.git/shallow" ]; then
 	debug "kernel tree is shallow; that is fine for building"
 fi
