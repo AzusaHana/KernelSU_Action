@@ -5,7 +5,7 @@ set -euo pipefail
 # shellcheck source=scripts/lib.sh
 . "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
 
-SCRIPT_DIR="$(dirname "${BASH_SOURCE[0]}")"
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 
 WORKSPACE=${WORKSPACE:?WORKSPACE must be set}
 KERNEL_DIR="${WORKSPACE}/android-kernel"
@@ -22,16 +22,18 @@ retry 3 git clone -q --recursive --depth=1 \
 	|| die "failed to clone ${KERNEL_SOURCE}"
 
 group "Removing KernelSU"
-if [ -x "${SCRIPT_DIR}/remove_ksu.sh" ]; then
-	bash "${SCRIPT_DIR}/remove_ksu.sh" "$KERNEL_DIR"
-elif [ -f "${SCRIPT_DIR}/remove_ksu.sh" ]; then
-	bash "${SCRIPT_DIR}/remove_ksu.sh" "$KERNEL_DIR"
+if [ -f "${SCRIPT_DIR}/remove_ksu.sh" ]; then
+	(
+		cd -- "$KERNEL_DIR"
+		bash "${SCRIPT_DIR}/remove_ksu.sh"
+	)
+	ok "KernelSU removal completed"
 else
 	die "KernelSU removal script not found: ${SCRIPT_DIR}/remove_ksu.sh"
 fi
-ok "KernelSU removal completed"
 endgroup
 
+# The kernel tree is intentionally cloned shallow for faster CI builds.
 if [ -f "${KERNEL_DIR}/.git/shallow" ]; then
 	debug "kernel tree is shallow; that is fine for building"
 fi
