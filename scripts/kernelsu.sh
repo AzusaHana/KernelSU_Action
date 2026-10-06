@@ -251,13 +251,6 @@ ksu_hook_configs() {
 				kconf_set_many "$defconfig" \
 					CONFIG_KSU_MANUAL_HOOK=y CONFIG_DEBUG_KERNEL=y \
 					CONFIG_KALLSYMS=y CONFIG_KALLSYMS_ALL=y ;;
-			backslashxx)
-				# backslashxx's manual hook patches ARM64 branch-link
-				# instructions to redirect the syscall entry points. Enable
-				# the linker hack that makes this redirect actually take
-				# effect; without it the patched branch may be optimized
-				# away or land on the wrong target.
-				kconf_enable "$defconfig" CONFIG_KSU_HACK_ARM64_BRANCH_LINK ;;
 			*) : ;;  # tiann/KernelSU 0.9.x infers manual hooks from the source patch
 		esac
 		;;
